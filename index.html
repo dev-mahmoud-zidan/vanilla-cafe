@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vanilla Cafe</title>
+    <link rel="icon" type="image/png" href="./img/3.png">
+    <!-- Bootstrap 5 RTL CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.rtl.min.css">
+    <!-- Google Fonts (Cairo & Great Vibes) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Great+Vibes&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="./css/index.css">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand bg-white shadow-sm py-2 px-3 rounded-4 container max-width-wrapper mt-3">
+    <div class="container-fluid p-0 d-flex justify-content-between align-items-center">
+        
+        <!-- زر اطلب الآن (جهة اليمين) -->
+        <button type="button" class="btn btn-order shadow-sm" onclick="openOrderModal()">
+            <i class="fa-solid fa-shopping-bag me-1"></i> اطلب الآن
+        </button>
+
+        <!-- اسم الكافيه (جهة الشمال) -->
+        <a class="navbar-brand m-0 text-center d-inline-flex flex-column align-items-center justify-content-center text-decoration-none" href="#">
+            <div class="position-relative d-inline-block leading-none">
+                <!-- كلمة Vanilla مع قلب زهرة الفانيلا -->
+                <span class="brand-logo text-brown" style="color: #2c221e; font-family: 'Great Vibes', cursive; font-size: 2.3rem; line-height: 1; display: inline-block;">
+                    Vanilla
+                </span>
+                <!-- أيقونة الوردة/القلب فوق الحرف -->
+                <span class="position-absolute" style="top: 2px; right: 48%; transform: translateX(50%); color: #a37e58; font-size: 0.65rem;">
+                    <i class="fa-solid fa-heart"></i>
+                </span>
+            </div>
+            <!-- كلمة CAFE بالأسفل بخط متباعد -->
+            <span class="text-uppercase text-brown fw-semibold" style="color: #2c221e; font-size: 0.65rem; letter-spacing: 4px; margin-top: -4px;">
+                CAFE
+            </span>
+        </a>
+
+    </div>
+</nav>
+
+<!-- زر لوحة التحكم العائم الدوار (أسفل يسار الشاشة) -->
+<button type="button" class="floating-admin-btn shadow-lg" onclick="toggleAdminModal()" title="لوحة التحكم">
+    <i class="fa-solid fa-gear spinning-icon"></i>
+</button>
+
+    <!-- 2. مودال الحجز والطلبات (يوضع في أسفل الصفحة) -->
+    <div class="modal fade" id="orderModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title font-bold"><i class="fa-solid fa-shopping-bag me-2"></i> اطلب الآن / حجز</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form onsubmit="submitBookingOrOrder(event)" class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label font-bold">نوع الخدمة المطلوبة:</label>
+                            <select id="order-type" class="form-select" onchange="handleOrderTypeChange()" required>
+                                <option value="delivery">🛵 طلب دليفري (توصيل)</option>
+                                <option value="in-house">☕ حجز أوردر في المكان</option>
+                                <option value="birthday">🎂 حجز عيد ميلاد</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label font-bold">اسم العميل:</label>
+                            <input type="text" id="client-name" class="form-control" placeholder="أدخل اسمك" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label font-bold">رقم الهاتف:</label>
+                            <input type="tel" id="client-phone" class="form-control" placeholder="05xxxxxxxx" required>
+                        </div>
+
+                        <div class="col-12" id="group-address">
+                            <label class="form-label font-bold">العنوان بالتفصيل:</label>
+                            <textarea id="client-address" class="form-control" rows="2" placeholder="المدينة، الحي، الشارع، رقم المبنى..."></textarea>
+                        </div>
+
+                        <div class="col-12" id="group-table" style="display:none;">
+                            <label class="form-label font-bold">رقم الطاولة (إن وجد):</label>
+                            <input type="text" id="client-table" class="form-control" placeholder="مثال: طاولة رقم 5">
+                        </div>
+
+                        <div id="group-birthday" class="row g-3 m-0 p-0" style="display:none;">
+                            <div class="col-md-6">
+                                <label class="form-label font-bold">تاريخ ووقت الحفل:</label>
+                                <input type="datetime-local" id="birthday-date" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label font-bold">عدد الأفراد المتوقع:</label>
+                                <input type="number" id="birthday-guests" class="form-control" placeholder="مثال: 10">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label font-bold">ملاحظات التجهيز والتزيين:</label>
+                                <textarea id="birthday-notes" class="form-control" rows="2" placeholder="تفاصيل الكيكة، الزينة المطلوبة..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-12" id="group-items">
+                            <label class="form-label font-bold">الأصناف المطلوبة (اختياري/أو كتابة طلبك):</label>
+                            <textarea id="order-items-text" class="form-control" rows="2" placeholder="اكتب طلبك هنا مثل: 2 لاتيه + 1 تشيز كيك..."></textarea>
+                        </div>
+
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-success w-100 fw-bold py-2">
+                                <i class="fa-brands fa-whatsapp me-2"></i> تأكيد وإرسال عبر الواتساب
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Main Banner Image -->
+<section class="container max-width-wrapper mt-n4">
+    <div class="banner-card shadow-sm border-0 overflow-hidden rounded-4 position-relative">
+        <!-- صورة البانر الأساسية -->
+        <img src="./img/1.jpeg" alt="Vanilla Cafe Banner" class="img-fluid w-100 display-banner-img">
+        
+        <!-- النص الترحيبي الداخلي (الجهة اليسرى من البانر) -->
+        <div class="banner-welcome-text text-center">
+            <span class="welcome-sub text-accent mb-1">مرحباً بك في</span>
+            <h2 class="welcome-title text-brown fw-bold my-1">فانيلا كافيه</h2>
+            <p class="welcome-desc text-muted mb-2">حيث يلتقي الطعم الرائع<br>بأجمل الأوقات</p>
+            <div class="welcome-heart">
+                <i class="fa-solid fa-heart"></i>
+            </div>
+        </div>
+
+        <!-- صورة الكوب المفرغة (الجهة اليمنى) -->
+        <img src="./img/2.png" alt="Vanilla Cafe Cup" class="overlay-cup">
+    </div>
+</section>
+    <!-- Navigation Categories Bar -->
+    <nav class="container max-width-wrapper mt-4">
+        <div id="category-bar" class="d-flex justify-content-start justify-content-md-center gap-2 overflow-x-auto pb-2">
+            <!-- Dynamic Categories -->
+        </div>
+    </nav>
+
+    <!-- Menu Display Area -->
+    <main class="container max-width-wrapper mt-4 space-y-4" id="menu">
+        <!-- Dynamic Menu Items -->
+    </main>
+
+<!-- Admin Login Modal (تصميم فاخر ومودرن) -->
+<div class="modal fade" id="loginModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered" style="max-width: 420px;">
+        <div class="modal-content border-0 shadow-2xl rounded-4 position-relative overflow-hidden" style="background: linear-gradient(145deg, #2b1f17 0%, #1c130d 100%); color: #fdfaf6;">
+            
+            <!-- خلفية جمالية خفيفة -->
+            <div class="position-absolute top-0 start-50 translate-middle-x w-100 h-100 opacity-10 pointer-events-none" style="background: radial-gradient(circle, #c89666 0%, transparent 70%); filter: blur(50px);"></div>
+
+            <div class="modal-body p-4 p-md-5 text-center position-relative z-1">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 opacity-75" data-bs-dismiss="modal" aria-label="Close"></button>
+
+                <!-- الشعار والأيقونة -->
+                <div class="d-inline-flex align-items-center justify-content-center rounded-circle bg-amber-gradient mb-3 p-3 shadow-lg" style="width: 70px; height: 70px; background: linear-gradient(135deg, #c89666, #8c5d3b);">
+                    <i class="fa-solid fa-mug-hot fs-2 text-white"></i>
+                </div>
+                
+                <h2 class="fw-bold text-white mb-0" style="font-family: 'Playfair Display', serif; letter-spacing: 1px;">Vanilla</h2>
+                <span class="badge bg-amber-soft text-amber fw-bold px-3 py-1 mb-3 rounded-pill text-uppercase" style="font-size: 0.75rem; letter-spacing: 2px;">Admin Portal</span>
+
+                <p class="text-white-50 small mb-4">أدخل كود الدخول الخاص بالإدارة للوصول للوحة التحكم</p>
+
+                <!-- النموذج -->
+                <form onsubmit="handleAdminLogin(event)">
+                    <div class="mb-4 text-start">
+                        <label for="admin-pass-input" class="form-label small fw-bold text-white-50 ms-1">كود المرور</label>
+                        <div class="input-group input-group-luxury">
+                            <span class="input-group-text border-0 bg-dark-glass text-amber"><i class="fa-solid fa-lock"></i></span>
+                            <input type="password" id="admin-pass-input" class="form-control border-0 bg-dark-glass text-white text-center fs-5 rounded-end-3" placeholder="••••" required style="letter-spacing: 6px;">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-luxury-accent w-100 fw-bold py-3 rounded-3 mb-3 shadow-lg d-flex align-items-center justify-content-center gap-2">
+                        <span>تسجيل الدخول</span>
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </button>
+
+                    <button type="button" class="btn btn-link text-white-50 text-decoration-none small p-0 hover-white" data-bs-dismiss="modal">
+                        العودة للمنيو الرئيسي
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Panel Modal (لوحة تحكم احترافية) -->
+<div class="modal fade" id="adminModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content rounded-4 border-0 shadow-2xl overflow-hidden" style="background-color: #FAF8F5;">
+            
+            <!-- Modal Header -->
+            <div class="modal-header border-0 px-4 pt-4 pb-3" style="background: linear-gradient(135deg, #2b1f17, #3d2b20); color: #fff;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-2 bg-amber-soft rounded-3">
+                        <i class="fa-solid fa-sliders text-amber fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0">لوحة إدارة المنيو</h5>
+                        <small class="text-white-50">إدارة الأقسام والمنتجات بمرونة</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4">
+                
+                <!-- Section: Add Category -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-white">
+                    <h6 class="fw-bold text-dark-brown mb-3 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-folder-plus text-amber"></i> إضافة قسم جديد
+                    </h6>
+                    <form onsubmit="handleAddCategory(event)" class="row g-2">
+                        <div class="col-md-5">
+                            <input type="text" id="cat-id-input" class="form-control custom-input" placeholder="معرف القسم (مثال: juice)" required>
+                        </div>
+                        <div class="col-md-5">
+                            <input type="text" id="cat-name-input" class="form-control custom-input" placeholder="اسم القسم (مثال: العصائر)" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-brown-gradient w-100 fw-bold h-100">إضافة</button>
+                        </div>
+                    </form>
+
+                    <div class="mt-3">
+                        <small class="text-muted d-block mb-2 fw-bold" style="font-size: 0.8rem;">الأقسام الحالية:</small>
+                        <div id="admin-categories-list" class="d-flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+
+                <!-- Section: Add Item -->
+                <div class="card border-0 shadow-sm rounded-4 mb-4 p-3 bg-white">
+                    <h6 class="fw-bold text-dark-brown mb-3 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-circle-plus text-amber"></i> إضافة صنف جديد
+                    </h6>
+                    <form onsubmit="handleAddItem(event)" class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">اسم الصنف</label>
+                            <input type="text" id="item-name" class="form-control custom-input" placeholder="مثال: لاتيه مكرمل" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-muted">القسم</label>
+                            <select id="item-category" class="form-select custom-input" required></select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small fw-bold text-muted">السعر (SAR)</label>
+                            <input type="number" id="item-price" class="form-control custom-input" placeholder="0.00" required>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">رفع صورة من الجهاز</label>
+                            <input type="file" id="item-image-file" class="form-control custom-input" accept="image/*">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-muted">أو رابط الصورة (URL)</label>
+                            <input type="url" id="item-image-url" class="form-control custom-input" placeholder="https://...">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-muted">وصف الصنف</label>
+                            <textarea id="item-desc" class="form-control custom-input" rows="2" placeholder="اكتب وصفاً شهياً للصنف..."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-brown-gradient w-100 fw-bold py-2 shadow-sm">
+                                <i class="fa-solid fa-floppy-disk me-1"></i> حفظ الصنف في المنيو
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Section: Item Management List -->
+                <div class="card border-0 shadow-sm rounded-4 p-3 bg-white">
+                    <h6 class="fw-bold text-dark-brown mb-3 d-flex align-items-center gap-2">
+                        <i class="fa-solid fa-boxes-stacked text-amber"></i> الأصناف المتاحة حالياً
+                    </h6>
+                    <div id="admin-items-list" class="admin-items-scroll custom-scrollbar pe-1" style="max-height: 250px; overflow-y: auto;"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Edit Item Modal (مودال تعديل الصنف) -->
+<div class="modal fade" id="editItemModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-2xl overflow-hidden" style="background-color: #FAF8F5;">
+            <div class="modal-header border-0 px-4 pt-4 pb-3" style="background: linear-gradient(135deg, #2b1f17, #3d2b20); color: #fff;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="p-2 bg-amber-soft rounded-3">
+                        <i class="fa-solid fa-pen-to-square text-amber fs-5"></i>
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold mb-0">تعديل الصنف</h5>
+                        <small class="text-white-50">تحديث بيانات ومنتج المنيو</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form onsubmit="handleEditItemSubmit(event)" class="row g-3">
+                    <input type="hidden" id="edit-item-id">
+                    
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted">اسم الصنف</label>
+                        <input type="text" id="edit-item-name" class="form-control custom-input" required>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">القسم</label>
+                        <select id="edit-item-category" class="form-select custom-input" required></select>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">السعر (SAR)</label>
+                        <input type="number" id="edit-item-price" class="form-control custom-input" required>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">رفع صورة جديدة (اختياري)</label>
+                        <input type="file" id="edit-item-image-file" class="form-control custom-input" accept="image/*">
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold text-muted">أو رابط الصورة (URL)</label>
+                        <input type="url" id="edit-item-image-url" class="form-control custom-input">
+                    </div>
+                    
+                    <div class="col-12">
+                        <label class="form-label small fw-bold text-muted">وصف الصنف</label>
+                        <textarea id="edit-item-desc" class="form-control custom-input" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-brown-gradient w-100 fw-bold py-2 shadow-sm">
+                            <i class="fa-solid fa-check me-1"></i> حفظ التعديلات
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+    <!-- Footer -->
+    <footer class="container max-width-wrapper mt-5 mb-4">
+        <div class="footer-card text-white rounded-4 p-4 p-md-5">
+            <div class="row align-items-center gy-4 text-center text-md-start">
+                
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center justify-content-center justify-content-md-start gap-3 bg-white-5 p-3 rounded-3 border border-light-10">
+                        <div class="bg-white p-2 rounded-3">
+                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=https://vanillacafe.com" alt="QR Code" width="70" height="70">
+                        </div>
+                        <div class="text-start">
+                            <h6 class="fw-bold text-warning mb-1">امسح الكود</h6>
+                            <small class="text-light-70">لطلب المنيو مباشرة</small>
+                        </div>
+                    </div>
+                </div>
+
+               <div class="col-md-4 text-center">
+    <h2 class="brand-logo text-warning display-4 mb-0">Vanilla</h2>
+    <p class="text-uppercase tracking-widest text-warning-50 small mb-2">CAFE</p>
+    <div class="d-flex justify-content-center gap-3 text-warning">
+        <a href="https://www.facebook.com/share/19hSXcKRaZ/?mibextid=wwXIfr" target="_blank" class="text-warning text-decoration-none"><i class="fa-brands fa-facebook"></i></a>
+        <a href="https://www.tiktok.com/@1v_a_n_i_l_l_a24?_r=1&_t=ZS-99t3aAgEL5E" target="_blank" class="text-warning text-decoration-none"><i class="fa-brands fa-tiktok"></i></a>
+        <a href="https://www.instagram.com/vani_lla122?stkn=MWh5bHk4bzdlbm13Yw%3D%3D&utm_source=qr" target="_blank" class="text-warning text-decoration-none"><i class="fa-brands fa-instagram"></i></a>
+    </div>
+</div>
+
+                <div class="col-md-4 text-center text-md-end">
+                    <h6 class="fw-bold mb-2">تواصل معنا</h6>
+                    <p class="small text-light-70 mb-1 dir-ltr">01023276505<i class="fa-solid fa-phone text-warning ms-1"></i></p>
+                    <p class="small text-light-70 mb-0">كوم حمادة -  شارع البنك الاهلي القديم<i class="fa-solid fa-location-dot text-warning ms-1"></i></p>
+                </div>
+
+            </div>
+        </div>
+        <p class="text-center small text-muted mt-3">© 2026 Vanilla Cafe. All Rights Reserved.</p>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script src="./js/index.js"></script>
+</body>
+</html>
